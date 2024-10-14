@@ -82,4 +82,65 @@ let quotes = [
     loadQuotes();
     showRandomQuote();
   };
+
+  function populateCategories() {
+    const categories = [...new Set(quotes.map(quote => quote.category))];
+    const categoryFilter = document.getElementById('categoryFilter');
+    
+    // Clear existing options
+    categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+    
+    // Add categories to the dropdown
+    categories.forEach(category => {
+      const option = document.createElement('option');
+      option.value = category;
+      option.textContent = category;
+      categoryFilter.appendChild(option);
+    });
+  }
+
+  function filterQuotes() {
+    const selectedCategory = document.getElementById('categoryFilter').value;
+    const filteredQuotes = selectedCategory === 'all'
+      ? quotes
+      : quotes.filter(quote => quote.category === selectedCategory);
+  
+    displayQuotes(filteredQuotes);
+    // Save the last selected category to localStorage
+    localStorage.setItem('selectedCategory', selectedCategory);
+  }
+  
+  // Function to display quotes
+  function displayQuotes(quotesToDisplay) {
+    const quoteDisplay = document.getElementById('quoteDisplay');
+    quoteDisplay.innerHTML = ''; // Clear existing quotes
+    quotesToDisplay.forEach(quote => {
+      const quoteElement = document.createElement('p');
+      quoteElement.textContent = `${quote.text} - ${quote.category}`;
+      quoteDisplay.appendChild(quoteElement);
+    });
+  }
+
+  
+  function loadLastSelectedFilter() {
+    const selectedCategory = localStorage.getItem('selectedCategory') || 'all';
+    document.getElementById('categoryFilter').value = selectedCategory;
+    filterQuotes(); // Apply the filter on page load
+  }
+
+  function addQuote() {
+    const newQuoteText = document.getElementById('newQuoteText').value;
+    const newQuoteCategory = document.getElementById('newQuoteCategory').value;
+  
+    if (newQuoteText && newQuoteCategory) {
+      const newQuote = { text: newQuoteText, category: newQuoteCategory };
+      quotes.push(newQuote);
+      saveQuotes(); // Save quotes to localStorage
+  
+      // Update categories dynamically
+      populateCategories();
+      filterQuotes(); // Refresh the displayed quotes
+    }
+  }
+
   
