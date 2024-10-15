@@ -143,4 +143,55 @@ let quotes = [
     }
   }
 
+
+  async function fetchQuotesFromServer() {
+    try {
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+      const serverQuotes = await response.json();
+  
+      const formattedQuotes = serverQuotes.map(quote => ({
+        text: quote.title,
+        category: "General"
+      }));
+  
+      syncQuotesWithLocalData(formattedQuotes);
+    } catch (error) {
+      console.error('Error fetching quotes from server:', error);
+    }
+  }
+  
+  function syncQuotesWithLocalData(serverQuotes) {
+    const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
+  
+    const newQuotes = serverQuotes.filter(serverQuote =>
+      !localQuotes.some(localQuote => localQuote.text === serverQuote.text)
+    );
+  
+    if (newQuotes.length > 0) {
+      const updatedQuotes = [...localQuotes, ...newQuotes];
+      localStorage.setItem('quotes', JSON.stringify(updatedQuotes));
+      displayQuotes(updatedQuotes);
+      notifyUser('New quotes were added from the server.');
+    }
+  }
+  
+  function notifyUser(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+  
+    setTimeout(() => {
+      notification.remove();
+    }, 3000);
+  }
+  
+  function startPeriodicSync() {
+    setInterval(fetchQuotesFromServer, 60000); // Fetch every 60 seconds
+  }
+  
+  window.onload = function() {
+    init(); // Initialize the app (load local data, populate categories, etc.)
+    startPeriodicSync(); // Start syncing with server
+  };
   
